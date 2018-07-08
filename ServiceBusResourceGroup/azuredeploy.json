@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namespaces_example_name": {
+      "type": "string"
+    },
+    "queues_example_name": {
+      "defaultValue": "example",
+      "type": "string"
+    },
+    "AuthorizationRules_RootManageSharedAccessKey_name": {
+      "defaultValue": "RootManageSharedAccessKey",
+      "type": "string"
+    },
+    "authorizationRules_SendListen_name": {
+      "defaultValue": "SendListen",
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "name": "[parameters('namespaces_example_name')]",
+      "apiVersion": "2017-04-01",
+      "location": "West Europe",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "metricId": "[concat('ea649323-6505-447b-88ca-fb807f81f559:', parameters('namespaces_example_name'))]",
+        "serviceBusEndpoint": "[concat('https://', parameters('namespaces_example_name'),'.servicebus.windows.net:443/')]",
+        "status": "Active"
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+      "name": "[concat(parameters('namespaces_example_name'), '/', parameters('AuthorizationRules_RootManageSharedAccessKey_name'))]",
+      "apiVersion": "2017-04-01",
+      "location": "West Europe",
+      "scale": null,
+      "properties": {
+        "rights": [
+          "Listen",
+          "Manage",
+          "Send"
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_example_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "name": "[concat(parameters('namespaces_example_name'), '/', parameters('queues_example_name'))]",
+      "apiVersion": "2017-04-01",
+      "location": "West Europe",
+      "scale": null,
+      "properties": {
+        "lockDuration": "PT30S",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P14D",
+        "deadLetteringOnMessageExpiration": false,
+        "enableBatchedOperations": true,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "status": "Active",
+        "enablePartitioning": true,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_example_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+      "name": "[concat(parameters('namespaces_example_name'), '/', parameters('queues_example_name'), '/', parameters('authorizationRules_SendListen_name'))]",
+      "apiVersion": "2017-04-01",
+      "location": "West Europe",
+      "scale": null,
+      "properties": {
+        "rights": [
+          "Manage",
+          "Listen",
+          "Send"
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_example_name'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/queues', parameters('namespaces_example_name'), parameters('queues_example_name'))]"
+      ]
+    }
+  ]
+}
